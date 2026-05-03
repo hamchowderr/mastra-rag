@@ -1,0 +1,39 @@
+{
+  "agentId": "knowledgeBase",
+  "thresholds": {
+    "faithfulness": 0.8,
+    "answerRelevancy": 0.6,
+    "contextRelevance": 0.55
+  },
+  "cases": [
+    {
+      "name": "chunking strategy question",
+      "input": "What chunking strategies does Mastra support for documents?",
+      "expectedSourceFile": "chunking-and-embedding.md",
+      "expectedKeywords": ["recursive", "markdown", "sentence"]
+    },
+    {
+      "name": "vector store list question",
+      "input": "Which vector databases does Mastra support?",
+      "expectedSourceFile": "vector-databases.md",
+      "expectedKeywords": ["PgVector", "Pinecone"]
+    },
+    {
+      "name": "embedding model dimension",
+      "input": "What is the dimension of OpenAI's text-embedding-3-small?",
+      "expectedKeywords": ["1536"]
+    },
+    {
+      "name": "metadata filtering syntax",
+      "input": "How do I filter retrieval results by metadata in Mastra?",
+      "expectedSourceFile": "retrieval.md",
+      "expectedKeywords": ["filter", "metadata"]
+    },
+    {
+      "name": "anti-hallucination: out-of-corpus question",
+      "input": "What is the capital of France?",
+      "expectedRefusal": true,
+      "weight": 2
+    }
+  ]
+}

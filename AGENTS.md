@@ -100,6 +100,39 @@ new PostgresStore({ id: 'mastra-storage', connectionString: env.SUPABASE_DB_URL 
 
 ---
 
+## RAG Conventions
+
+This project is a RAG template. Every agent answers questions about a corpus of documents.
+
+**Always use the `retrieve` tool — never reimplement retrieval inline.**
+
+```typescript
+import { retrieve } from '../tools/retrieve';
+// add to agent tools: { retrieve }
+```
+
+**Always cite sources.** The agent's instructions require it to mention the source file when answering. Do not remove or weaken this requirement.
+
+**Never answer from training data when the corpus is the source of truth.** The agent must call `retrieve` before answering any corpus question. If retrieval returns no relevant chunks, the agent must say so — it must never fill in from its own knowledge.
+
+**Refusal cases are required in every eval dataset.** Include at least one `expectedRefusal: true` case (e.g., an out-of-corpus question). Exclude these cases from scorer aggregation — a score of 0 on a correct refusal is expected behavior, not a failure.
+
+**RAG scorer triplet**: faithfulness, answerRelevancy, contextRelevance. Register all three on every RAG agent. Correct import path:
+
+```typescript
+import {
+  createFaithfulnessScorer,
+  createAnswerRelevancyScorer,
+  createContextRelevanceScorerLLM,
+} from '@mastra/evals/scorers/prebuilt';
+```
+
+`createContextRelevanceScorerLLM` requires a `contextExtractor` in `options`. Use the one from `_example.scorers.ts` as a template — it reads `tool-invocation` parts from assistant message content.
+
+**Corpus changes require a re-ingest.** If you edit `data/corpus/` or change `RAG_EMBEDDING_MODEL`, run `npm run ingest` to rebuild the index.
+
+---
+
 ## Things to Never Do
 
 - **Never read `process.env` directly** — use `env` from `src/lib/env.ts`
