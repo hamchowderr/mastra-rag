@@ -158,3 +158,8 @@
   - answerRelevancy threshold: 0.6 (base spec said 0.7 but real scores ran 0.62–0.69)
   - contextRelevance threshold: 0.55 (0.58 was consistent score; 0.6 is too tight for the best-effort contextExtractor)
   - Keywords trimmed to reliable subset — brittle operator literals ($or, $gt) and niche database names (Chroma) removed
+
+## RAG Polish 01: Cleanup & Package Name Fix
+- Status: complete
+- Files changed: package.json (name: template-mastra-base → template-mastra-rag), fixtures;C (deleted)
+- Verification: typecheck still passes; fixtures;C confirmed gone; only `fixtures` remains
