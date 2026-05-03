@@ -78,6 +78,10 @@ jobs:
         env:
           SUPABASE_DB_URL: postgres://postgres:postgres@localhost:5432/mastra
           OPENAI_API_KEY: ${{ secrets.CI_OPENAI_API_KEY }}
+          APP_SECRET: ${{ secrets.CI_APP_SECRET }}
+          SUPABASE_URL: https://stub.supabase.co
+          SUPABASE_ANON_KEY: stub
+          SUPABASE_SERVICE_ROLE_KEY: stub
           MASTRA_TELEMETRY_DISABLED: '1'
           NODE_ENV: test
       - name: Run eval gate
