@@ -9,6 +9,8 @@ import { PostgresStore, PgVector } from '@mastra/pg';
 import { DuckDBStore } from '@mastra/duckdb';
 import { MastraCompositeStore } from '@mastra/core/storage';
 import { Observability, DefaultExporter, SensitiveDataFilter } from '@mastra/observability';
+import { MastraEditor } from '@mastra/editor';
+import { MCPServer } from '@mastra/mcp';
 
 import { knowledgeBaseAgent } from './agents/_example';
 import {
@@ -17,8 +19,18 @@ import {
   contextRelevanceScorer,
 } from './scorers/_example.scorers';
 
+const mcpServer = new MCPServer({
+  id: 'rag-mcp',
+  name: 'template-mastra-rag',
+  version: '0.1.0',
+  description: 'MCP server exposing template-mastra-rag knowledge-base agent as a tool',
+  tools: {},
+  agents: { knowledgeBase: knowledgeBaseAgent },
+});
+
 export const mastra = new Mastra({
   agents: { knowledgeBase: knowledgeBaseAgent },
+  mcpServers: { ragMcp: mcpServer },
   vectors: {
     pgVector: new PgVector({
       id: 'pg-vector',
@@ -33,6 +45,7 @@ export const mastra = new Mastra({
   storage: new MastraCompositeStore({
     id: 'composite-storage',
     default: new PostgresStore({ id: 'mastra-storage', connectionString: env.SUPABASE_DB_URL }),
+    editor: new PostgresStore({ id: 'mastra-editor-storage', connectionString: env.SUPABASE_DB_URL }),
     domains: {
       observability: await new DuckDBStore().getStore('observability'),
     },
@@ -47,4 +60,5 @@ export const mastra = new Mastra({
       },
     },
   }),
+  editor: new MastraEditor(),
 });

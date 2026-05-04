@@ -1,5 +1,39 @@
 # Build Progress — template-mastra-rag
 
+## RAG Polish 03: Verify Reachability + Document
+- Status: complete
+- Endpoints verified:
+  - REST: PASS — `POST /api/agents/knowledgeBase/generate` → HTTP 200, grounded answer with source citation
+  - A2A agent card: PASS — `GET /api/.well-known/knowledgeBase/agent-card.json` → JSON agent metadata
+  - A2A execute: not separately verified (confirmed route works from base template; same Mastra routing)
+  - MCP: PASS — `POST /api/mcp/rag-mcp/mcp` initialize + tools/list → `ask_knowledgeBase` listed
+  - Studio + Editor: PASS — UI loads, knowledgeBase visible, Editor tab present
+- README updated: "Reachability" section added after Quickstart
+- AGENTS.md updated: "Reachability conventions" section added before "Things to Never Do"
+- Spec deviations: same as base — A2A agent card is at `GET /api/.well-known/{agentId}/agent-card.json`, not `GET /a2a/{agentId}`; MCP URL uses server id (`rag-mcp`), not config key (`ragMcp`)
+
+---
+
+## RAG Polish 02: Configure MCPServer + MastraEditor
+- Status: complete
+- knowledgeBase description: added — "Knowledge-base agent that answers questions about the project corpus using RAG. Retrieves relevant chunks from a pgvector index and grounds responses in source-cited context."
+- Imports added: MastraEditor, MCPServer
+- Configuration: MCPServer instance (id: rag-mcp) + mcpServers and editor fields in Mastra constructor
+- vectors config preserved: confirmed — vectors field untouched; knowledgeBase agent confirmed via API
+- Verification: typecheck passes; dev boots; health 200; MCP initialize returns `{"name":"template-mastra-rag","version":"0.1.0"}`
+- Spec deviations: same as base — `tools: {}` required; MCP URL uses id (`rag-mcp`) not key (`ragMcp`)
+
+---
+
+## RAG Polish 01 (reachability): Install Packages + Editor Storage
+- Status: complete
+- Installed: @mastra/editor@0.7.22, @mastra/mcp@1.6.0
+- File changed: src/mastra/index.ts — added `editor` key to MastraCompositeStore at top level (sibling of `default`/`domains`); vectors field untouched
+- Verification: typecheck passes (exit 0)
+- Spec deviation: spec placed `editor` inside `domains` — that key does not exist in `Partial<StorageDomains>`. Actual API exposes `editor` as a top-level `MastraCompositeStoreConfig` field. Fixed accordingly.
+
+---
+
 ## Phase 0: Fork base via degit
 - Status: complete
 - Files touched: all (degit from hamchowderr/template-mastra-base), .env (created)

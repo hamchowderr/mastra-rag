@@ -23,6 +23,7 @@ import {
 export const knowledgeBaseAgent = new Agent({
   id: 'knowledgeBase',
   name: 'Knowledge Base',
+  description: 'Knowledge-base agent that answers questions about the project corpus using RAG. Retrieves relevant chunks from a pgvector index and grounds responses in source-cited context.',
   instructions: `You answer questions about Mastra's RAG documentation using the retrieve tool to fetch relevant context.
 
 Rules:
