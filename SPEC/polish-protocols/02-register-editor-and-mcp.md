@@ -12,6 +12,8 @@ If not, add:
 description: 'Knowledge-base agent that answers questions about the project corpus using RAG. Retrieves relevant chunks from a pgvector index and grounds responses in source-cited context.'
 ```
 
+This is a hard requirement — MCPServer fails to start without it.
+
 ## Step 2: Imports
 
 At the top of `src/mastra/index.ts`:
@@ -29,9 +31,14 @@ const mcpServer = new MCPServer({
   name: 'template-mastra-rag',
   version: '0.1.0',
   description: 'MCP server exposing template-mastra-rag knowledge-base agent as a tool',
+  tools: {},
   agents: { knowledgeBase: knowledgeBaseAgent },
 });
 ```
+
+**Important — `tools: {}` is required.** The `MCPServerConfig` type marks `tools: ToolsInput` as a required field, even when registering agents-only. Pass an empty object. Omitting it will fail typecheck.
+
+**Important — the URL uses the `id`, not the config key.** When the server is registered as `mcpServers: { ragMcp: mcpServer }` below, the resulting MCP endpoint is `/api/mcp/rag-mcp/mcp` (using the `id` from the constructor), NOT `/api/mcp/ragMcp/mcp` (the config key). Use the `id` in cURL examples and client config.
 
 ## Step 4: Configure the Mastra constructor
 
@@ -56,7 +63,7 @@ export const mastra = new Mastra({
   scorers: { faithfulnessScorer, answerRelevancyScorer, contextRelevanceScorer },
   mcpServers: { ragMcp: mcpServer },
   vectors: { pgVector: new PgVector({ ... }) },  // unchanged
-  storage: new MastraCompositeStore({ ... }),  // editor domain configured in Polish 01
+  storage: new MastraCompositeStore({ ... }),  // editor configured in Polish 01
   logger: new PinoLogger({ ... }),
   observability: new Observability({ ... }),
   editor: new MastraEditor(),
@@ -74,7 +81,7 @@ npm run dev
 
 **Pass**:
 - Typecheck zero errors
-- Studio loads
+- Studio loads (port 4111 if available, else next port — that's fine)
 - knowledgeBase agent visible
 - Editor tab present
 - Retrieval still works (chat with the agent — should retrieve from corpus)
@@ -88,7 +95,7 @@ If retrieval breaks, the `vectors` field got disturbed. Re-check Step 4.
 - Status: complete
 - knowledgeBase description: <existing | added: ...>
 - Imports added: MastraEditor, MCPServer
-- Configuration: MCPServer instance + mcpServers and editor in Mastra constructor
+- Configuration: MCPServer instance (id: rag-mcp, tools: {}) + mcpServers and editor in Mastra constructor
 - vectors config preserved: confirmed (retrieval test passes)
 - Verification: typecheck passes; dev boots; Editor tab visible
 - Notes: <anything unexpected>
