@@ -39,6 +39,7 @@ npm install
 - `ls` shows base's structure (src/, scripts/, Dockerfile, etc.) plus your SPEC folder
 - `node_modules/` populated
 - `npm run typecheck` passes
+- `src/mastra/lib/processors.ts` and `src/mastra/lib/memory.ts` are inherited from base unchanged — keep them. The KB agent (Phase 8) wires both in.
 
 ## Phase 1: Strip the lead-intake assets
 
@@ -165,7 +166,7 @@ Write `src/mastra/tools/retrieve.ts` per spec.
 
 ## Phase 8: Knowledge-base agent
 
-1. Write `src/mastra/agents/_example.ts` per spec.
+1. Write `src/mastra/agents/_example.ts` per spec — including `memory: createDefaultMemory()` and the shared `inputProcessors` / `outputProcessors` from `lib/`.
 2. Update `src/mastra/index.ts` to:
    - Add `vectors: { pgVector: new PgVector({...}) }` to the Mastra config
    - Import and register `knowledgeBaseAgent`

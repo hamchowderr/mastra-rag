@@ -1,5 +1,4 @@
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
 import { PGVECTOR_PROMPT } from '@mastra/pg';
 
 import { retrieve } from '../tools/retrieve';
@@ -8,6 +7,8 @@ import {
   answerRelevancyScorer,
   contextRelevanceScorer,
 } from '../scorers/_example.scorers';
+import { defaultInputProcessors, defaultOutputProcessors } from '../lib/processors';
+import { createDefaultMemory } from '../lib/memory';
 
 /**
  * # Knowledge Base Agent (canonical RAG example)
@@ -38,7 +39,11 @@ Rules:
 ${PGVECTOR_PROMPT}`,
   model: 'openai/gpt-4o-mini',
   tools: { retrieve },
-  memory: new Memory(),
+  memory: createDefaultMemory(),
+  // Shared safety/hygiene baseline — see src/mastra/lib/processors.ts.
+  // (8000-token output cap suits long-form RAG answers.)
+  inputProcessors: defaultInputProcessors,
+  outputProcessors: defaultOutputProcessors,
   scorers: {
     faithfulness: {
       scorer: faithfulnessScorer,

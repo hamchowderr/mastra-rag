@@ -161,6 +161,90 @@ export const retrieve = createVectorQueryTool({
 
 ---
 
+## `src/mastra/lib/processors.ts` (from base, unchanged)
+
+**Purpose**: One shared input/output processor baseline every agent spreads in, so the whole fleet has the same safety/hygiene layer instead of each agent reinventing it.
+
+**Design rule (do not relitigate)**: only the two **deterministic, no-LLM** processors are active by default — `UnicodeNormalizer` (input) and `TokenLimiter` (output). The five model-backed safety processors (`ModerationProcessor`, `PromptInjectionDetector`, `PIIDetector`, `LanguageDetector`, `SystemPromptScrubber`) each construct their own agent and make their own LLM call; enabling all of them turns one request into ~6 sequential LLM calls. They — plus behavior-changing ones (`ToolCallFilter`, `StructuredOutputProcessor`, `BatchPartsProcessor`) — ship **present-but-commented** as opt-in, with a one-line rationale each. Do not enable them by default. The 8000-token output cap suits long-form RAG answers.
+
+**Implementation**:
+
+```typescript
+import type { InputProcessorOrWorkflow, OutputProcessorOrWorkflow } from '@mastra/core/processors';
+import { UnicodeNormalizer, TokenLimiter } from '@mastra/core/processors';
+
+export const DEFAULT_OUTPUT_TOKEN_LIMIT = 8000;
+
+export const defaultInputProcessors: InputProcessorOrWorkflow[] = [
+  new UnicodeNormalizer({ stripControlChars: true, collapseWhitespace: true }),
+  // OPT-IN (each = one extra LLM call), uncomment + add a model to enable:
+  // new PromptInjectionDetector({ model: 'anthropic/claude-haiku-4-5' }),
+  // new ModerationProcessor({ model: 'anthropic/claude-haiku-4-5' }),
+  // new PIIDetector({ model: 'anthropic/claude-haiku-4-5', strategy: 'redact' }),
+];
+
+export const defaultOutputProcessors: OutputProcessorOrWorkflow[] = [
+  new TokenLimiter({ limit: DEFAULT_OUTPUT_TOKEN_LIMIT, strategy: 'truncate' }),
+  // OPT-IN:
+  // new SystemPromptScrubber({ model: 'anthropic/claude-haiku-4-5' }),
+  // new ToolCallFilter({ exclude: [] }),
+];
+```
+
+(See the actual file for the full commented opt-in list and the file-header rationale.)
+
+**Acceptance criteria**:
+- Typecheck passes; both arrays export with the correct `InputProcessorOrWorkflow[]` / `OutputProcessorOrWorkflow[]` types.
+- Only `UnicodeNormalizer` and `TokenLimiter` are active; everything else is commented.
+- These are NOT memory processors — adding them does not suppress Mastra's auto-added `MessageHistory` / `WorkingMemory` processors.
+
+---
+
+## `src/mastra/lib/memory.ts` (from base, unchanged)
+
+**Purpose**: One shared `Memory` factory so every agent that has memory uses the same policy.
+
+**Design rule (do not relitigate)**: working memory **ON**, `scope: 'resource'` (persists per user across threads). Semantic recall **OFF** — here retrieval is the job of the `retrieve` tool against the pgvector knowledge base, not memory; semantic recall would also add an embed + vector-query per turn. Pass no `storage` — Memory inherits the Mastra instance's `PostgresStore` (Supabase), which supports the `mastra_resources` table resource-scoping requires.
+
+**Implementation**:
+
+```typescript
+import { Memory } from '@mastra/memory';
+
+export const DEFAULT_WORKING_MEMORY_TEMPLATE = `# User Profile
+
+## Identity
+- Name:
+- Role / Company:
+
+## Preferences
+- Communication style: [e.g., concise, detailed]
+- Constraints / things to avoid:
+
+## Session State
+- Current goal:
+- Open items:
+`;
+
+export function createDefaultMemory(
+  template: string = DEFAULT_WORKING_MEMORY_TEMPLATE,
+): Memory {
+  return new Memory({
+    options: {
+      workingMemory: { enabled: true, scope: 'resource', template },
+      // semanticRecall: intentionally off
+    },
+  });
+}
+```
+
+**Acceptance criteria**:
+- Typecheck passes.
+- Agents use `memory: createDefaultMemory()` (NOT bare `new Memory()`).
+- Working memory only persists per user when the caller passes `memory: { thread, resource }` — document this contract in `README.md`.
+
+---
+
 ## `src/mastra/agents/_example.ts`
 
 **Purpose**: Production knowledge-base agent. Replaces base's lead-intake agent. Uses RAG to answer questions about the corpus with source citations.
@@ -168,7 +252,8 @@ export const retrieve = createVectorQueryTool({
 **Behavior**:
 - Default model: `openai/gpt-5-mini` (or whatever current best-small OpenAI model is — check what works in base's CI eval and match)
 - Has the `retrieve` tool
-- Memory enabled (carries thread context)
+- Memory via `createDefaultMemory()` — working memory ON (resource-scoped), semantic recall OFF
+- Shared `inputProcessors` / `outputProcessors` from `lib/processors`
 - Three RAG scorers attached with `sampling: { type: 'ratio', rate: 1 }`
 - Returns answers in plain text (NOT structured output) with inline source attributions
 
@@ -176,7 +261,7 @@ export const retrieve = createVectorQueryTool({
 
 ```typescript
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
+import { PGVECTOR_PROMPT } from '@mastra/pg';
 
 import { retrieve } from '../tools/retrieve';
 import {
@@ -184,7 +269,8 @@ import {
   answerRelevancyScorer,
   contextRelevanceScorer,
 } from '../scorers/_example.scorers';
-import { PGVECTOR_PROMPT } from '@mastra/pg';
+import { createDefaultMemory } from '../lib/memory';
+import { defaultInputProcessors, defaultOutputProcessors } from '../lib/processors';
 
 /**
  * # Knowledge Base Agent (canonical RAG example)
@@ -236,7 +322,9 @@ Rules:
 ${PGVECTOR_PROMPT}`,
   model: 'openai/gpt-5-mini',
   tools: { retrieve },
-  memory: new Memory(),
+  memory: createDefaultMemory(),
+  inputProcessors: defaultInputProcessors,
+  outputProcessors: defaultOutputProcessors,
   scorers: {
     faithfulness: {
       scorer: faithfulnessScorer,

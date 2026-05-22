@@ -55,6 +55,21 @@ curl -X POST http://localhost:4111/api/agents/knowledgeBase/generate \
 
 For streaming responses, use `/stream` instead of `/generate`. Full OpenAPI spec at `/api/openapi.json`. Interactive docs at `/swagger-ui` (dev only).
 
+#### Working memory (persist context per user)
+
+The `knowledgeBase` agent has **working memory** enabled (resource-scoped — see `src/mastra/lib/memory.ts`). For it to persist across a user's conversations, pass `memory.resource` (a stable user ID) and `memory.thread` (the conversation ID) in the body:
+
+```bash
+curl -X POST http://localhost:4111/api/agents/knowledgeBase/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages":[{"role":"user","content":"What chunking strategies does Mastra support?"}],
+    "memory":{"resource":"user-alice-456","thread":"conversation-123"}
+  }'
+```
+
+Without `memory.resource`, working memory falls back to thread-only. Semantic recall (RAG over chat history) is intentionally off here — retrieval is handled by the `retrieve` tool against your knowledge base, not by memory.
+
 ### A2A (Agent-to-Agent Protocol)
 
 Google's open standard for agent-to-agent communication. JSON-RPC over HTTP.
