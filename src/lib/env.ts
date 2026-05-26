@@ -10,9 +10,12 @@ const envSchema = z
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
     APP_SECRET: z.string().min(32, 'APP_SECRET must be at least 32 chars'),
 
-    SUPABASE_URL: z.string().url(),
-    SUPABASE_ANON_KEY: z.string().min(1),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    // Supabase client vars are optional — only needed if you wire up the
+    // (currently unused) supabase auth/RLS client. Plain Postgres deploys
+    // (e.g. Coolify pgvector) only need SUPABASE_DB_URL below.
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_ANON_KEY: z.string().min(1).optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
     SUPABASE_DB_URL: z
       .string()
       .url()
