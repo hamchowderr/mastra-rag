@@ -28,6 +28,8 @@ const mcpServer = new MCPServer({
   agents: { knowledgeBase: knowledgeBaseAgent },
 });
 
+const pgStore = new PostgresStore({ id: 'mastra-storage', connectionString: env.SUPABASE_DB_URL });
+
 export const mastra = new Mastra({
   agents: { knowledgeBase: knowledgeBaseAgent },
   mcpServers: { ragMcp: mcpServer },
@@ -42,10 +44,13 @@ export const mastra = new Mastra({
     answerRelevancy: answerRelevancyScorer,
     contextRelevance: contextRelevanceScorer,
   },
+  // Single shared Postgres store instance for both default + editor slots.
+  // Two separate PostgresStore instances on the same DB race on first boot,
+  // both creating shared types (e.g. mastra_ai_spans) -> 23505 unique violation.
   storage: new MastraCompositeStore({
     id: 'composite-storage',
-    default: new PostgresStore({ id: 'mastra-storage', connectionString: env.SUPABASE_DB_URL }),
-    editor: new PostgresStore({ id: 'mastra-editor-storage', connectionString: env.SUPABASE_DB_URL }),
+    default: pgStore,
+    editor: pgStore,
     domains: {
       observability: await new DuckDBStore().getStore('observability'),
     },
