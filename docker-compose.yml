@@ -17,8 +17,11 @@ services:
       dockerfile: Dockerfile
     container_name: mastra
     restart: unless-stopped
-    ports:
-      - "4111:4111" # Coolify assigns the public domain to this service
+    # `expose` (not `ports`) — Coolify routes the public domain via Traefik on the
+    # internal network; publishing a host port collides with other deploys on the
+    # same host. For local host access use docker-compose.override.yml (ports).
+    expose:
+      - "4111"
     env_file:
       - .env
     environment:
