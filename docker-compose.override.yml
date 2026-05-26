@@ -1,0 +1,7 @@
+# Local dev override — auto-merged by `docker compose` on your machine, ignored
+# by Coolify (it deploys with an explicit `-f docker-compose.yml`). Publishes the
+# Mastra port to the host so you can reach http://localhost:4111 locally.
+services:
+  mastra:
+    ports:
+      - "4111:4111"

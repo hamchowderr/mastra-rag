@@ -36,6 +36,8 @@ template-mastra-rag/
 │       ├── index.ts                      # Extended — registers PgVector under `vectors`
 │       ├── lib/
 │       │   ├── aimock.ts                 # From base, unchanged
+│       │   ├── memory.ts                 # createDefaultMemory() — working memory baseline
+│       │   ├── processors.ts             # Shared default input/output processors
 │       │   └── supabase.ts               # From base, unchanged
 │       ├── scorers/
 │       │   ├── _example.scorers.ts       # REPLACED — RAG-specific scorers
@@ -109,7 +111,9 @@ These have sensible defaults, so the env loader treats them all as optional with
 | Corpus | `data/corpus/*.md` | The 4 Mastra RAG doc pages, frozen as static files |
 | Ingestion script | `scripts/ingest.ts` | Reads corpus, chunks via `MDocument.fromMarkdown`, embeds via `embedMany`, upserts to `PgVector` |
 | Retrieval tool | `src/mastra/tools/retrieve.ts` | Wraps `createVectorQueryTool` with the project's index/embedding config |
-| KB agent | `src/mastra/agents/_example.ts` | Production knowledge-base agent. Uses retrieve tool. Cites sources. |
+| Memory baseline | `src/mastra/lib/memory.ts` | `createDefaultMemory()` factory: working memory ON (resource-scoped), semantic recall OFF |
+| Processor baseline | `src/mastra/lib/processors.ts` | `defaultInputProcessors` (UnicodeNormalizer) + `defaultOutputProcessors` (TokenLimiter, 8000-cap); model-backed safety processors present-but-commented (opt-in) |
+| KB agent | `src/mastra/agents/_example.ts` | Production knowledge-base agent. Uses retrieve tool + `createDefaultMemory()` + the shared processors. Cites sources. |
 | RAG scorers | `src/mastra/scorers/_example.scorers.ts` | Faithfulness, answer relevancy, context relevance |
 | Eval dataset | `src/mastra/scorers/datasets/_example.json` | Canonical Q&A pairs about Mastra RAG with expected source files |
 

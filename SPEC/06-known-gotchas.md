@@ -13,6 +13,8 @@ The high-impact ones for this template:
 3. **PostgresStore and PgVector both require `id` field**. Don't omit it.
 4. **DuckDB requires glibc**. Don't change the Dockerfile back to Alpine.
 5. **PostHog telemetry leaks errors in restricted networks**. Set `MASTRA_TELEMETRY_DISABLED=1`.
+6. **Resource-scoped working memory silently no-ops without `resource`**. `createDefaultMemory()` uses `scope: 'resource'`; it only persists per user when the caller passes `memory: { thread, resource }` to `agent.generate()` / the REST body. Omit `resource` and it falls back to thread-only — no error, just no cross-conversation persistence. Resource-scoping needs the `mastra_resources` table (Postgres/Supabase here — fine). Contract is documented in `README.md`.
+7. **Processors in `lib/` are agent processors, NOT the observability span processor**. `SensitiveDataFilter` in `index.ts` is a `spanOutputProcessors` entry (scrubs traces). The agent-level baseline lives in `lib/processors.ts` (`UnicodeNormalizer` + `TokenLimiter`). Don't conflate them. They're also not memory processors, so they don't suppress Mastra's auto-added `MessageHistory` / `WorkingMemory` processors.
 
 ## RAG-specific gotchas
 
