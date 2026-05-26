@@ -34,6 +34,7 @@
     "@mastra/rag": "^2.2.1",
     "@supabase/supabase-js": "^2.105.1",
     "ai": "^6.0.174",
+    "mysql2": "^3.22.3",
     "zod": "^4.4.2"
   },
   "devDependencies": {

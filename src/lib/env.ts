@@ -21,6 +21,14 @@ const envSchema = z
       .url()
       .refine((v) => v.startsWith('postgres'), 'Must be a postgres:// connection string'),
 
+    // Dolt (versioned business data) — the compose `dolt` service. Optional so
+    // the app boots without Dolt; the Dolt tools error clearly if it's missing.
+    DOLT_HOST: z.string().optional(),
+    DOLT_PORT: z.coerce.number().int().optional(),
+    DOLT_USER: z.string().optional(),
+    DOLT_PASSWORD: z.string().optional(),
+    DOLT_DATABASE: z.string().optional(),
+
     ANTHROPIC_API_KEY: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),

@@ -19,13 +19,21 @@ import {
   answerRelevancyScorer,
   contextRelevanceScorer,
 } from './scorers/_example.scorers';
+import { doltTools } from './tools/dolt';
+import { ensureDatabase, doltConfigured } from './lib/dolt';
+
+// Bootstrap the versioned Dolt database on first boot (no-op if Dolt isn't configured).
+if (doltConfigured) {
+  await ensureDatabase();
+}
 
 const mcpServer = new MCPServer({
   id: 'rag-mcp',
   name: 'template-mastra-rag',
   version: '0.1.0',
-  description: 'MCP server exposing template-mastra-rag knowledge-base agent as a tool',
-  tools: {},
+  description: 'MCP server exposing template-mastra-rag knowledge-base agent + Dolt tools',
+  // Dolt versioned-data tools exposed over MCP.
+  tools: { ...doltTools },
   agents: { knowledgeBase: knowledgeBaseAgent },
 });
 
