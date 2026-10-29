@@ -1,0 +1,149 @@
+{
+  "fixtures": [
+    {
+      "match": {
+        "userMessage": "What chunking strategies does Mastra support for documents?",
+        "hasToolResult": false
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "id": "call_rag_chunking",
+            "name": "retrieve",
+            "arguments": {
+              "queryText": "chunking strategies for documents",
+              "topK": 5,
+              "filter": "{}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "userMessage": "What chunking strategies does Mastra support for documents?",
+        "hasToolResult": true,
+        "toolResultContains": "\"source\""
+      },
+      "response": {
+        "content": "Mastra's `chunk` method supports several strategies, each tuned for a document type [source: chunking-and-embedding.md]:\n\n- `recursive`: smart splitting based on content structure\n- `character`: simple character-based splits\n- `token`: token-aware splitting\n- `markdown`: Markdown-aware splitting\n- `semantic-markdown`: Markdown splitting based on related header families\n- `html`, `json` and `latex`: structure-aware splitting for those formats\n- `sentence`: sentence-aware splitting\n\nEach strategy accepts its own parameters [source: chunking-and-embedding.md]."
+      }
+    },
+    {
+      "match": {
+        "userMessage": "Which vector databases does Mastra support?",
+        "hasToolResult": false
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "id": "call_rag_vectordbs",
+            "name": "retrieve",
+            "arguments": {
+              "queryText": "supported vector databases",
+              "topK": 5,
+              "filter": "{}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "userMessage": "Which vector databases does Mastra support?",
+        "hasToolResult": true,
+        "toolResultContains": "\"source\""
+      },
+      "response": {
+        "content": "Mastra supports multiple vector stores for embedding persistence and similarity search, including PgVector (pgvector on Postgres), Pinecone, Qdrant, and MongoDB [source: overview.md]. Each store is used through the same `upsert` / `query` interface [source: vector-databases.md]."
+      }
+    },
+    {
+      "match": {
+        "userMessage": "What is the dimension of OpenAI's text-embedding-3-small?",
+        "hasToolResult": false
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "id": "call_rag_dimension",
+            "name": "retrieve",
+            "arguments": {
+              "queryText": "text-embedding-3-small embedding dimension",
+              "topK": 5,
+              "filter": "{}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "userMessage": "What is the dimension of OpenAI's text-embedding-3-small?",
+        "hasToolResult": true,
+        "toolResultContains": "\"source\""
+      },
+      "response": {
+        "content": "OpenAI's `text-embedding-3-small` outputs vectors with 1536 dimensions [source: chunking-and-embedding.md]. Some models support reducing this dimension to save storage [source: chunking-and-embedding.md]."
+      }
+    },
+    {
+      "match": {
+        "userMessage": "How do I filter retrieval results by metadata in Mastra?",
+        "hasToolResult": false
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "id": "call_rag_filter",
+            "name": "retrieve",
+            "arguments": {
+              "queryText": "metadata filtering retrieval results",
+              "topK": 5,
+              "filter": "{\"source\":\"retrieval.md\"}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "userMessage": "How do I filter retrieval results by metadata in Mastra?",
+        "hasToolResult": true,
+        "toolResultContains": "\"source\""
+      },
+      "response": {
+        "content": "Pass a `filter` object to the vector store's `query` call. Mastra uses a unified MongoDB-style query syntax for metadata filters that works across all supported vector stores [source: retrieval.md]:\n\n```ts\nconst results = await pgVector.query({\n  indexName: 'embeddings',\n  queryVector: embedding,\n  topK: 10,\n  filter: { source: 'article1.txt' },\n});\n```\n\nCombining vector similarity with metadata filters narrows the search space, e.g. by document source, date range, or category [source: retrieval.md]."
+      }
+    },
+    {
+      "match": {
+        "userMessage": "What is the capital of France?",
+        "hasToolResult": false
+      },
+      "response": {
+        "toolCalls": [
+          {
+            "id": "call_rag_offtopic",
+            "name": "retrieve",
+            "arguments": {
+              "queryText": "capital of France",
+              "topK": 5,
+              "filter": "{}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "userMessage": "What is the capital of France?",
+        "hasToolResult": true,
+        "toolResultContains": "\"source\""
+      },
+      "response": {
+        "content": "I cannot answer that from the documentation. The retrieved chunks cover Mastra's RAG features and contain nothing about the capital of France, and that question is outside the documentation corpus."
+      }
+    }
+  ]
+}
