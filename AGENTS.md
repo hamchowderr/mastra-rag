@@ -140,7 +140,7 @@ Every agent registered in `src/mastra/index.ts` is reachable through four standa
 - REST: `POST /api/agents/{agentId}/generate` (and `/stream`) — automatic
 - A2A agent card: `GET /api/.well-known/{agentId}/agent-card.json` — automatic
 - A2A execute: `POST /api/a2a/{agentId}` (JSON-RPC, `method: "message/send"`) — automatic
-- MCP: `POST /api/mcp/{serverId}/mcp` — via `MCPServer` instance in `src/mastra/index.ts`
+- MCP: `POST /api/mcp/{serverId}/mcp` — via `MCPServer` instance in `src/mastra/index.ts` (stateless, MCP 2026-07-28 only on `@mastra/mcp` 2.x — no `initialize`/session header; pre-2026 clients get 400)
 - Studio: `localhost:4111` UI — automatic via `mastra dev`
 
 Note: `/a2a/{agentId}` (without `/api` prefix) is caught by Studio's router and returns HTML. Always use the `/api/` prefix for A2A and MCP calls.

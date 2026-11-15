@@ -91,6 +91,8 @@ Use this when another agent (in CrewAI, LangGraph, ADK, or any A2A-compatible fr
 
 Anthropic's open standard for agent-tool integration. The template's MCPServer exposes every agent as a callable tool at `/api/mcp/rag-mcp/mcp`.
 
+`@mastra/mcp` 2.x serves only the MCP **2026-07-28** revision: requests are stateless (no `initialize` handshake, no `mcp-session-id` header) and each one carries `MCP-Protocol-Version: 2026-07-28` plus a `_meta` envelope. Clients that only speak the older 2024/2025 revisions get `400 Unsupported protocol version`; upgrade the client, or pin `@mastra/mcp` 1.x if you must serve them.
+
 To use from Claude Desktop, add to your `claude_desktop_config.json`:
 
 ```json
