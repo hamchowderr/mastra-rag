@@ -20,7 +20,7 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.58",
+    "@ai-sdk/openai": "^3.0.145",
     "@mastra/auth": "^1.1.5",
     "@mastra/core": "^1.83.0",
     "@mastra/duckdb": "^1.19.0",
@@ -33,7 +33,7 @@
     "@mastra/pg": "^1.36.0",
     "@mastra/rag": "^2.8.0",
     "@supabase/supabase-js": "^2.105.1",
-    "ai": "^6.0.174",
+    "ai": "^6.0.336",
     "mysql2": "^3.22.3",
     "zod": "^4.4.2"
   },
